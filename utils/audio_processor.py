@@ -30,7 +30,7 @@ def download_youtube_audio(url: str) -> str:
         # MOST IMPORTANT FIX
         "extractor_args": {
             "youtube": {
-                "player_client": ["android_creator"]
+                "player_client": ["tv_embedded", "android"]
             }
         },
 
