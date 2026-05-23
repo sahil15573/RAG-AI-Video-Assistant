@@ -30,9 +30,6 @@ deep-translator
 # YouTube Audio Download
 yt-dlp
 
-# Audio Processing
-pydub
-
 # PDF Export
 fpdf
 
