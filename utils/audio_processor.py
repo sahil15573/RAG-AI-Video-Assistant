@@ -11,7 +11,9 @@ def download_youtube_audio(url: str) -> str:
 
     ydl_opts = {
         "format": "bestaudio/best",
+
         "outtmpl": output_path,
+
         "postprocessors": [
             {
                 "key": "FFmpegExtractAudio",
@@ -19,7 +21,26 @@ def download_youtube_audio(url: str) -> str:
                 "preferredquality": "192",
             }
         ],
+
         "quiet": True,
+
+        # ─────────────────────────────────────────────
+        # YouTube 403 Fixes for Streamlit Cloud
+        # ─────────────────────────────────────────────
+        "cookiefile": None,
+        "nocheckcertificate": True,
+        "geo_bypass": True,
+
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["android"]
+            }
+        },
+
+        # Better reliability
+        "retries": 10,
+        "fragment_retries": 10,
+        "skip_unavailable_fragments": True,
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -27,6 +48,7 @@ def download_youtube_audio(url: str) -> str:
         filename = ydl.prepare_filename(info)
 
     filename = os.path.splitext(filename)[0] + ".wav"
+
     return filename
 
 
@@ -84,11 +106,13 @@ def process_input(source: str) -> list:
     if source.startswith("http://") or source.startswith("https://"):
         print("Detected YouTube URL. Downloading audio...")
         wav_path = download_youtube_audio(source)
+
     else:
         print("Detected local file. Converting to WAV...")
         wav_path = convert_to_wav(source)
 
     print("Chunking audio...")
+
     chunks = chunk_audio(wav_path)
 
     print(f"Audio ready — {len(chunks)} chunk(s) created.")
