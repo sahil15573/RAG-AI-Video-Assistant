@@ -10,9 +10,34 @@ def download_youtube_audio(url: str) -> str:
     output_path = os.path.join(DOWNLOAD_DIR, "%(title)s.%(ext)s")
 
     ydl_opts = {
-        "format": "bestaudio/best",
+        "format": "bestaudio[ext=m4a]/bestaudio/best",
 
         "outtmpl": output_path,
+
+        "quiet": False,
+
+        "noplaylist": True,
+
+        "retries": 10,
+        "fragment_retries": 10,
+
+        "nocheckcertificate": True,
+
+        "geo_bypass": True,
+
+        "extractor_args": {
+            "youtube": {
+                "player_client": ["android", "web"]
+            }
+        },
+
+        "http_headers": {
+            "User-Agent": (
+                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+                "AppleWebKit/537.36 (KHTML, like Gecko) "
+                "Chrome/122.0.0.0 Safari/537.36"
+            )
+        },
 
         "postprocessors": [
             {
@@ -21,26 +46,6 @@ def download_youtube_audio(url: str) -> str:
                 "preferredquality": "192",
             }
         ],
-
-        "quiet": True,
-
-        # ─────────────────────────────────────────────
-        # YouTube 403 Fixes for Streamlit Cloud
-        # ─────────────────────────────────────────────
-        "cookiefile": None,
-        "nocheckcertificate": True,
-        "geo_bypass": True,
-
-        "extractor_args": {
-            "youtube": {
-                "player_client": ["android"]
-            }
-        },
-
-        # Better reliability
-        "retries": 10,
-        "fragment_retries": 10,
-        "skip_unavailable_fragments": True,
     }
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
@@ -73,31 +78,62 @@ def convert_to_wav(input_path: str) -> str:
 
 
 def chunk_audio(wav_path: str, chunk_minutes: int = 10) -> list:
-    chunk_duration = chunk_minutes * 60
 
-    output_pattern = f"{wav_path}_chunk_%03d.wav"
+    import math
 
-    command = [
-        "ffmpeg",
-        "-i",
+    chunk_ms = chunk_minutes * 60 * 1000
+
+    chunks = []
+
+    duration_command = [
+        "ffprobe",
+        "-v",
+        "error",
+        "-show_entries",
+        "format=duration",
+        "-of",
+        "default=noprint_wrappers=1:nokey=1",
         wav_path,
-        "-f",
-        "segment",
-        "-segment_time",
-        str(chunk_duration),
-        "-c",
-        "copy",
-        output_pattern,
     ]
 
-    subprocess.run(command, check=True)
+    result = subprocess.run(
+        duration_command,
+        capture_output=True,
+        text=True
+    )
 
-    chunks = sorted([
-        os.path.join(DOWNLOAD_DIR, f)
-        for f in os.listdir(DOWNLOAD_DIR)
-        if f.startswith(os.path.basename(wav_path))
-        and "_chunk_" in f
-    ])
+    duration = float(result.stdout.strip())
+
+    total_chunks = math.ceil(duration / (chunk_minutes * 60))
+
+    for i in range(total_chunks):
+
+        start_time = i * chunk_minutes * 60
+
+        output_chunk = f"{wav_path}_chunk_{i}.wav"
+
+        command = [
+            "ffmpeg",
+            "-y",
+            "-i",
+            wav_path,
+            "-ss",
+            str(start_time),
+            "-t",
+            str(chunk_minutes * 60),
+            "-acodec",
+            "pcm_s16le",
+            "-ar",
+            "16000",
+            "-ac",
+            "1",
+            output_chunk,
+        ]
+
+        subprocess.run(command, check=True)
+
+        if os.path.exists(output_chunk):
+            chunks.append(output_chunk)
 
     return chunks
 
