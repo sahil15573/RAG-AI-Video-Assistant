@@ -1,58 +1,25 @@
-# Core App
 streamlit
+python-dotenv
 
-# LLM + LangChain
 langchain
 langchain-core
 langchain-community
 langchain-text-splitters
-langchain-chroma
-langchain-huggingface
 langchain-mistralai
 
-# Vector Database
-chromadb
-
-# Embeddings
 sentence-transformers
 huggingface-hub
 
-# Whisper Transcription
 openai-whisper
-torch
-ffmpeg-python
 
-# Translation
-deep-translator
-
-# YouTube Audio Download
 yt-dlp
 
-# PDF Export
-fpdf
-
-# Data Handling
-pandas
-numpy
-
-# Tokenization / Utilities
-tiktoken
-
-# HTTP Requests
 requests
 
-# File Handling
-python-multipart
-
-# Optional Faster Inference
-accelerate
-
-
-
-# Compatibility
-typing-extensions
+tiktoken
 
 protobuf==3.20.3
-ffmpeg
 
-yt-dlp-nightly
+chromadb==0.5.5
+
+pysqlite3-binary
