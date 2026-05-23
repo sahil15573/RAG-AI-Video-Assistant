@@ -5,19 +5,23 @@ langchain
 langchain-core
 langchain-community
 langchain-text-splitters
-langchain-huggingface
 langchain-mistralai
 
-faiss-cpu
+sentence-transformers==2.7.0
+huggingface-hub==0.23.0
 
-sentence-transformers
-huggingface-hub
-
-openai-whisper
+openai-whisper==20231117
 
 yt-dlp
 
 requests
 
-numpy<2
+tiktoken
+
 protobuf==3.20.3
+
+faiss-cpu==1.7.4
+
+numpy==1.26.4
+
+torch==2.2.2
