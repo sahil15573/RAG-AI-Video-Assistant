@@ -1,10 +1,9 @@
-from langchain_chroma import Chroma
-from langchain_community.embeddings import HuggingFaceEmbeddings
+from langchain_community.vectorstores import FAISS
+from langchain_huggingface import HuggingFaceEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 
-COLLECTION_NAME = "meeting_transcript"
-EMBEDDING_MODEL = "all-MiniLM-L6-v2"
+EMBEDDING_MODEL = "sentence-transformers/all-MiniLM-L6-v2"
 
 
 def get_embeddings():
@@ -15,13 +14,6 @@ def get_embeddings():
 
 
 def build_vector_store(transcript: str):
-
-    # 🚨 IMPORTANT FIX
-    if not transcript or len(transcript.strip()) == 0:
-        raise ValueError(
-            "Transcript is empty. Transcription failed."
-        )
-
     print("Building vector store...")
 
     splitter = RecursiveCharacterTextSplitter(
@@ -30,12 +22,6 @@ def build_vector_store(transcript: str):
     )
 
     chunks = splitter.split_text(transcript)
-
-    # 🚨 Another safety fix
-    if len(chunks) == 0:
-        raise ValueError(
-            "No transcript chunks created."
-        )
 
     docs = [
         Document(
@@ -47,17 +33,15 @@ def build_vector_store(transcript: str):
 
     embeddings = get_embeddings()
 
-    vector_store = Chroma.from_documents(
-        documents=docs,
-        embedding=embeddings,
-        collection_name=COLLECTION_NAME,
-        persist_directory=None
+    vector_store = FAISS.from_documents(
+        docs,
+        embeddings
     )
 
     return vector_store
 
 
-def get_retriever(vector_store: Chroma, k: int = 4):
+def get_retriever(vector_store, k: int = 4):
     return vector_store.as_retriever(
         search_type="similarity",
         search_kwargs={"k": k}

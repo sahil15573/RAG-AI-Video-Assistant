@@ -5,7 +5,10 @@ langchain
 langchain-core
 langchain-community
 langchain-text-splitters
+langchain-huggingface
 langchain-mistralai
+
+faiss-cpu
 
 sentence-transformers
 huggingface-hub
@@ -16,10 +19,5 @@ yt-dlp
 
 requests
 
-tiktoken
-
+numpy<2
 protobuf==3.20.3
-
-chromadb==0.5.5
-
-pysqlite3-binary
