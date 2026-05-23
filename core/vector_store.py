@@ -1,5 +1,5 @@
 from langchain_chroma import Chroma
-from langchain_huggingface import HuggingFaceEmbeddings
+from langchain_community.embeddings import HuggingFaceEmbeddings
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain_core.documents import Document
 
@@ -14,7 +14,14 @@ def get_embeddings():
     )
 
 
-def build_vector_store(transcript: str) -> Chroma:
+def build_vector_store(transcript: str):
+
+    # 🚨 IMPORTANT FIX
+    if not transcript or len(transcript.strip()) == 0:
+        raise ValueError(
+            "Transcript is empty. Transcription failed."
+        )
+
     print("Building vector store...")
 
     splitter = RecursiveCharacterTextSplitter(
@@ -23,6 +30,12 @@ def build_vector_store(transcript: str) -> Chroma:
     )
 
     chunks = splitter.split_text(transcript)
+
+    # 🚨 Another safety fix
+    if len(chunks) == 0:
+        raise ValueError(
+            "No transcript chunks created."
+        )
 
     docs = [
         Document(
@@ -38,18 +51,6 @@ def build_vector_store(transcript: str) -> Chroma:
         documents=docs,
         embedding=embeddings,
         collection_name=COLLECTION_NAME,
-        persist_directory=None
-    )
-
-    return vector_store
-
-
-def load_vector_store() -> Chroma:
-    embeddings = get_embeddings()
-
-    vector_store = Chroma(
-        collection_name=COLLECTION_NAME,
-        embedding_function=embeddings,
         persist_directory=None
     )
 
