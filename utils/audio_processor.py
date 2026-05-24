@@ -10,46 +10,41 @@ def download_youtube_audio(url: str) -> str:
     output_path = os.path.join(DOWNLOAD_DIR, "%(title)s.%(ext)s")
 
     ydl_opts = {
-        "format": "bestaudio/best",
+    "format": "bestaudio[ext=m4a]/bestaudio/best",
 
-        "outtmpl": output_path,
+    "outtmpl": output_path,
 
-        "quiet": False,
+    "quiet": True,
+    "noplaylist": True,
 
-        "noplaylist": True,
+    "cookiefile": None,
 
-        "geo_bypass": True,
+    "extractor_args": {
+        "youtube": {
+            "player_client": ["android", "web"]
+        }
+    },
 
-        "nocheckcertificate": True,
+    "http_headers": {
+        "User-Agent": (
+            "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
+            "AppleWebKit/537.36 (KHTML, like Gecko) "
+            "Chrome/122.0.0.0 Safari/537.36"
+        )
+    },
 
-        "ignoreerrors": False,
+    "postprocessors": [
+        {
+            "key": "FFmpegExtractAudio",
+            "preferredcodec": "wav",
+            "preferredquality": "192",
+        }
+    ],
 
-        "retries": 15,
-        "fragment_retries": 15,
-
-        # MOST IMPORTANT FIX
-        "extractor_args": {
-            "youtube": {
-                "player_client": ["tv_embedded", "android"]
-            }
-        },
-
-        "http_headers": {
-            "User-Agent": (
-                "Mozilla/5.0 (Windows NT 10.0; Win64; x64) "
-                "AppleWebKit/537.36 (KHTML, like Gecko) "
-                "Chrome/122.0.0.0 Safari/537.36"
-            )
-        },
-
-        "postprocessors": [
-            {
-                "key": "FFmpegExtractAudio",
-                "preferredcodec": "wav",
-                "preferredquality": "192",
-            }
-        ],
-    }
+    "retries": 10,
+    "fragment_retries": 10,
+    "skip_unavailable_fragments": True,
+}
 
     with yt_dlp.YoutubeDL(ydl_opts) as ydl:
         info = ydl.extract_info(url, download=True)
